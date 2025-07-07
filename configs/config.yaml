@@ -1,0 +1,70 @@
+# XFS Quota Kit Configuration
+
+# 服务器配置
+server:
+  host: "0.0.0.0"
+  port: 8080
+  mode: "release"  # debug, release, test
+  tls:
+    enabled: false
+    cert_file: ""
+    key_file: ""
+
+# 数据库配置
+database:
+  type: "sqlite"  # sqlite, mysql, postgres
+  host: ""
+  port: 0
+  database: "xfs_quota.db"
+  username: ""
+  password: ""
+  ssl_mode: "disable"
+
+# 日志配置
+logging:
+  level: "info"      # debug, info, warn, error
+  format: "json"     # json, text
+  output: "stdout"   # stdout, file
+  file: "/var/log/xfs-quota-kit/app.log"
+  max_size: 100      # MB
+  max_backups: 3
+  max_age: 28        # days
+  compress: true
+
+# XFS配置
+xfs:
+  default_path: "/mnt/xfs"
+  projects_file: "/etc/projects"
+  projid_file: "/etc/projid"
+  auto_create: true
+  backup_enabled: true
+  backup_path: "/var/backups/xfs-quota-kit"
+  
+  # 默认配额限制
+  default_limits:
+    user_block_soft: "1GB"
+    user_block_hard: "2GB"
+    user_inode_soft: 100000
+    user_inode_hard: 200000
+    group_block_soft: "10GB"
+    group_block_hard: "20GB"
+    group_inode_soft: 1000000
+    group_inode_hard: 2000000
+
+  # 文件系统配置
+  filesystems:
+    - name: "main"
+      mount_point: "/mnt/xfs"
+      device: "/dev/sdb1"
+      options: "pquota"
+      enabled: true
+
+# 监控配置
+monitor:
+  enabled: true
+  interval: "5m"
+  alert_threshold: 80        # 使用率百分比
+  report_path: "/var/log/xfs-quota-kit/reports"
+  report_interval: "1h"
+  email_notification: false
+  webhook_url: "" 

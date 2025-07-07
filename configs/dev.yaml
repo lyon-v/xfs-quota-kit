@@ -1,0 +1,21 @@
+# Development Configuration
+
+server:
+  host: "127.0.0.1"
+  port: 8080
+  mode: "debug"
+
+logging:
+  level: "debug"
+  format: "text"
+  output: "stdout"
+
+xfs:
+  default_path: "./testdata/xfs"
+  projects_file: "./testdata/projects"
+  projid_file: "./testdata/projid"
+  auto_create: true
+  backup_enabled: false
+
+monitor:
+  enabled: false 

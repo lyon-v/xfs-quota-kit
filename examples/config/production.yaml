@@ -1,0 +1,145 @@
+# XFS Quota Kit 生产环境配置示例
+
+# 服务器配置
+server:
+  host: "0.0.0.0"
+  port: 8080
+  mode: "release"
+  tls:
+    enabled: true
+    cert_file: "/etc/ssl/certs/xfs-quota-kit.crt"
+    key_file: "/etc/ssl/private/xfs-quota-kit.key"
+
+# 数据库配置
+database:
+  type: "postgres"
+  host: "postgres.internal"
+  port: 5432
+  database: "xfs_quota"
+  username: "xfs_user"
+  password: "${DB_PASSWORD}"  # 从环境变量读取
+  ssl_mode: "require"
+
+# 日志配置
+logging:
+  level: "info"
+  format: "json"
+  output: "file"
+  file: "/var/log/xfs-quota-kit/app.log"
+  max_size: 100
+  max_backups: 10
+  max_age: 30
+  compress: true
+
+# XFS配置
+xfs:
+  default_path: "/data"
+  projects_file: "/etc/projects"
+  projid_file: "/etc/projid"
+  auto_create: false
+  backup_enabled: true
+  backup_path: "/var/backups/xfs-quota-kit"
+  
+  # 默认配额限制
+  default_limits:
+    user_block_soft: "5GB"
+    user_block_hard: "10GB"
+    user_inode_soft: 500000
+    user_inode_hard: 1000000
+    group_block_soft: "50GB"
+    group_block_hard: "100GB"
+    group_inode_soft: 5000000
+    group_inode_hard: 10000000
+
+  # 文件系统配置
+  filesystems:
+    - name: "data"
+      mount_point: "/data"
+      device: "/dev/mapper/data-lv"
+      options: "pquota"
+      enabled: true
+    - name: "home"
+      mount_point: "/home"
+      device: "/dev/mapper/home-lv"
+      options: "uquota,gquota"
+      enabled: true
+
+# 监控配置
+monitor:
+  enabled: true
+  interval: "1m"
+  alert_threshold: 85
+  report_path: "/var/log/xfs-quota-kit/reports"
+  report_interval: "6h"
+  email_notification: true
+  webhook_url: "https://alerts.company.com/webhook"
+  
+  # 告警配置
+  alerts:
+    email:
+      smtp_host: "smtp.company.com"
+      smtp_port: 587
+      smtp_user: "alerts@company.com"
+      smtp_password: "${SMTP_PASSWORD}"
+      from: "xfs-quota-kit@company.com"
+      to:
+        - "ops-team@company.com"
+        - "storage-team@company.com"
+    
+    slack:
+      webhook_url: "${SLACK_WEBHOOK_URL}"
+      channel: "#storage-alerts"
+      username: "XFS Quota Kit"
+
+# 认证配置
+auth:
+  enabled: true
+  type: "jwt"
+  secret: "${JWT_SECRET}"
+  expiry: "24h"
+  
+  # LDAP 配置（可选）
+  ldap:
+    enabled: false
+    host: "ldap.company.com"
+    port: 389
+    bind_dn: "cn=admin,dc=company,dc=com"
+    bind_password: "${LDAP_PASSWORD}"
+    search_base: "ou=users,dc=company,dc=com"
+
+# API 限流配置
+rate_limit:
+  enabled: true
+  requests_per_minute: 100
+  burst: 50
+
+# 缓存配置
+cache:
+  enabled: true
+  type: "redis"
+  redis:
+    host: "redis.internal"
+    port: 6379
+    password: "${REDIS_PASSWORD}"
+    db: 0
+    expiry: "5m"
+
+# 备份配置
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # 每天凌晨2点
+  retention_days: 30
+  storage:
+    type: "s3"
+    s3:
+      bucket: "xfs-quota-backups"
+      region: "us-west-2"
+      access_key: "${AWS_ACCESS_KEY}"
+      secret_key: "${AWS_SECRET_KEY}"
+
+# 审计日志
+audit:
+  enabled: true
+  file: "/var/log/xfs-quota-kit/audit.log"
+  format: "json"
+  include_request_body: false 
